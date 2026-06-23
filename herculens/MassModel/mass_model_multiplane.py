@@ -2,23 +2,28 @@
 #
 # Copyright (c) 2024, herculens developers and contributors
 
-__author__ = 'krawczyk', 'martin-millon'
+__author__ = 'krawczyk', 'martin-millon', 'aymgal'
 
 import numpy as np
 import jax
 import jax.numpy as jnp
-import jax_cosmo as jc
-
 from functools import partial
-
 from scipy.constants import arcsec
+
+try:
+    import jax_cosmo as jc
+except ImportError as e:
+    jc = None
 
 from herculens.MassModel.mass_model import MassModel, ZeroMassModel
 
 
 def _is_jax_cosmo(cosmology):
     """Check if the cosmology object is a jax_cosmo.Cosmology instance."""
-    return hasattr(cosmology, '_Omega_c') and hasattr(cosmology, '_workspace')
+    has_jc_attr = hasattr(cosmology, '_Omega_c') and hasattr(cosmology, '_workspace')
+    if has_jc_attr and jc is None:
+        raise ImportError("The passed cosmology instance seems like a jax_cosmo.Cosmology instance. However, jax_cosmo is not installed. Please install jax_cosmo to use this function.")
+    return isinstance(cosmology, jc.Cosmology)
 
 
 def _ang_dist(cosmology, z):
